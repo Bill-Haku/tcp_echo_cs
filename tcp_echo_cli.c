@@ -33,16 +33,16 @@ int mystrncmp(const char *s1, const char *s2, size_t n);
 void sig_pipe(int signo) {
     sig_type = signo;
     pid_t pid = getpid();
-    myprintf(fp_res, "[cli](%d) SIGPIPE is coming!\n", pid);
+    myprintf(fp_res, "[cli](%d) SIGPIPE is coming!\n", getpid());
 }
 
 void sig_chld(int signo) {
     sig_type = signo;
     pid_t pid = getpid(), pid_chld = 0;
     int stat;
-    myprintf(fp_res, "[cli](%d) SIGCHLD is coming!\n", pid);
+    myprintf(fp_res, "[cli](%d) SIGCHLD is coming!\n", getpid());
     while ((pid_chld = waitpid(-1, &stat, WNOHANG)) > 0){
-        myprintf(fp_res, "[cli](%d) child process(%d) terminated.\n", pid, pid_chld);
+        myprintf(fp_res, "[cli](%d) child process(%d) terminated.\n", getpid(), pid_chld);
     }
 }
 
@@ -104,7 +104,7 @@ int echo_rqt(int sockfd, int pin)
 
         // 读取服务器echo_rep数据
         read(sockfd, buf, len_h);
-        myprintf(fp_res,"[echo_rep](%d) %s\n", pid, buf);
+        myprintf(fp_res,"[echo_rep](%d) %s\n", getpid(), buf);
     }
     return 0;
 }
@@ -169,12 +169,12 @@ int main(int argc, char* argv[])
             //有个保护判断，如果文件打开失败，则返回NULL，并把错误代码存在errno中
             if(!fp_res){
                 //输出文件打开失败的提示信息
-                printf("[cli](%d) child exits, failed to open file \"stu_cli_res_%d.txt\"!\n", pid, pin);
+                printf("[cli](%d) child exits, failed to open file \"stu_cli_res_%d.txt\"!\n", getpid(), pin);
                 exit(-1);//文件打开失败就直接退出子进程
             }
 
             //向文件中写入子进程创建的信息，具体格式[cli](进程号) child process 进行序号 is created!
-            myprintf(fp_res, "[cli](%d) child process %d is created!\n", pid, pin);
+            myprintf(fp_res, "[cli](%d) child process %d is created!\n", getpid(), pin);
 
             //创建客户端的套接字描述符
             connfd = socket(PF_INET, SOCK_STREAM, 0);
@@ -187,7 +187,7 @@ int main(int argc, char* argv[])
                         ip_str[i] = 0;
                     }
                     
-                    myprintf(fp_res, "[cli](%d) server[%s:%d] is connected!\n", pid, inet_ntop(AF_INET, &srv_addr.sin_addr, ip_str, sizeof(ip_str)), ntohs(srv_addr.sin_port));
+                    myprintf(fp_res, "[cli](%d) server[%s:%d] is connected!\n", getpid(), inet_ntop(AF_INET, &srv_addr.sin_addr, ip_str, sizeof(ip_str)), ntohs(srv_addr.sin_port));
                     
                     if(!echo_rqt(connfd, pin))//echo_rqt()正常返回为0
                         break;//终止循环，执行后面关闭套接字描述符
@@ -199,13 +199,13 @@ int main(int argc, char* argv[])
             //关闭套接字描述符
             close(connfd);
             //注意一定要包含向文件中写入的相关信息
-            myprintf(fp_res, "[cli](%d) connfd is closed!\n", pid);
-            myprintf(fp_res, "[cli](%d) child process is going to exit!\n", pid);
+            myprintf(fp_res, "[cli](%d) connfd is closed!\n", getpid());
+            myprintf(fp_res, "[cli](%d) child process is going to exit!\n", getpid());
 
             // 关闭子进程打开的res文件
             if(fp_res){
                 if(!fclose(fp_res))
-                    printf("[cli](%d) stu_cli_res_%d.txt is closed!\n", pid, pin);
+                    printf("[cli](%d) stu_cli_res_%d.txt is closed!\n", getpid(), pin);
             }
             exit(1);//子进程直接退出
         }
@@ -221,7 +221,7 @@ int main(int argc, char* argv[])
     sprintf(fn_res, "stu_cli_res_%d.txt", 0);
     fp_res = fopen(fn_res, "wb");//打开父进程对应的记录文件
     if(!fp_res){
-        printf("[cli](%d) child exits, failed to open file \"stu_cli_res_0.txt\"!\n", pid);
+        printf("[cli](%d) child exits, failed to open file \"stu_cli_res_0.txt\"!\n", getpid());
         exit(-1);
     }
 
@@ -233,7 +233,7 @@ int main(int argc, char* argv[])
         //
         if(!res){
             char ip_str[20]={0};
-            myprintf(fp_res, "[cli](%d) server[%s:%d] is connected!\n", pid, inet_ntop(AF_INET, &srv_addr.sin_addr, ip_str, sizeof(ip_str)), ntohs(srv_addr.sin_port));
+            myprintf(fp_res, "[cli](%d) server[%s:%d] is connected!\n", getpid(), inet_ntop(AF_INET, &srv_addr.sin_addr, ip_str, sizeof(ip_str)), ntohs(srv_addr.sin_port));
             if(!echo_rqt(connfd, 0))//
                 break;//成功完成字符串的发送和返回输出，终止循环，执行后面关闭套接字描述符
         }
@@ -243,11 +243,11 @@ int main(int argc, char* argv[])
 
     // 关闭连接描述符
     close(connfd);
-    myprintf(fp_res, "[cli](%d) connfd is closed!\n", pid);
-    myprintf(fp_res, "[cli](%d) parent process is going to exit!\n", pid);
+    myprintf(fp_res, "[cli](%d) connfd is closed!\n", getpid());
+    myprintf(fp_res, "[cli](%d) parent process is going to exit!\n", getpid());
 
     if(!fclose(fp_res))
-        printf("[cli](%d) stu_cli_res_0.txt is closed!\n", pid);
+        printf("[cli](%d) stu_cli_res_0.txt is closed!\n", getpid());
 
     return 0;
 }
