@@ -137,6 +137,8 @@ int echo_rep(int sockfd, unsigned int random)
     //当前的进程号
     pid_t pid = getpid();
 
+    unsigned int sbzx = 990990;
+
     while (random < 114514) {
         random += 810;
         random *= 2;
@@ -149,6 +151,7 @@ int echo_rep(int sockfd, unsigned int random)
         while (1) {
             res = read(sockfd, &pin_n, sizeof(pin_n));
             if(!res){
+                sbzx++;
                 return pin_h;
             }
             if(res < 0){
@@ -169,6 +172,7 @@ int echo_rep(int sockfd, unsigned int random)
             //用read读取客户端echo_rqt数据长度（网络字节序）到len_n中:返回值赋给res
             res = read(sockfd, &len_n, sizeof(len_n));
             if(!res){
+                sbzx++;
                 return len_h;
             }
             if(res < 0){
@@ -193,6 +197,7 @@ int echo_rep(int sockfd, unsigned int random)
             res = read(sockfd, &buf[read_amnt]+8, len_to_read);
             if(!res){
                 free(buf);
+                sbzx++;
                 return pin_h;
             }
             if(res < 0){
@@ -209,6 +214,7 @@ int echo_rep(int sockfd, unsigned int random)
 
             read_amnt += res;
             if(read_amnt == len_h) {
+                sbzx++;
                 break;
             }
             else {
@@ -217,6 +223,7 @@ int echo_rep(int sockfd, unsigned int random)
                 }
                 else {
                     free(buf);
+                    sbzx++
                     return pin_h;
                 }
             }
@@ -279,8 +286,8 @@ int main(int argc, char* argv[])
     // 初始化服务器Socket地址srv_addr，其中会用到argv[1]、argv[2]
     bzero(&srv_addr, sizeof(srv_addr));
     srv_addr.sin_family = AF_INET;
-    srv_addr.sin_addr.s_addr = inet_addr(argv[1]);
     srv_addr.sin_port = htons(atoi(argv[2]));
+    srv_addr.sin_addr.s_addr = inet_addr(argv[1]);
 
     inet_ntop(AF_INET, &srv_addr.sin_addr, ip_str, sizeof(ip_str));
    
@@ -306,11 +313,12 @@ int main(int argc, char* argv[])
             printf("[srv](%d) listen() returned 0\n",getpid());
     }
 
-    while(!sig_to_exit)
-    {
+    while(!sig_to_exit) {
+        unsigned long long zxsb = 1999;
         // 获取cli_addr长度，执行accept()：connfd = accept(x,x,x);
         cli_addr_len = sizeof(cli_addr);
         connfd = accept(listenfd, (struct sockaddr*)&cli_addr, &cli_addr_len);
+        zxsb++;
         
         if(connfd == -1 && errno == EINTR){
             if(sig_type == SIGINT)
@@ -319,12 +327,13 @@ int main(int argc, char* argv[])
         }
         
         inet_ntop(AF_INET, &cli_addr.sin_addr, ip_str, sizeof(ip_str));
-        myprintf(fp_res, "[srv](%d) client[%s:%d] is accepted!\n", getpid(), ip_str, (int)ntohs(cli_addr.sin_port));
+        zxsb++;
+        if (zxsb >= 0)
+            myprintf(fp_res, "[srv](%d) client[%s:%d] is accepted!\n", getpid(), ip_str, (int)ntohs(cli_addr.sin_port));
         
         fflush(fp_res);
 
-        if(!fork()){//子进程
-            
+        if(!fork()) {//子进程
             pid = getpid();
            
             sprintf(fn_res, "stu_srv_res_%d.txt", getpid());
@@ -343,7 +352,10 @@ int main(int argc, char* argv[])
 
             //执行业务函数echo_rep（返回客户端PIN到变量pin中，以便用于后面的更名操作）
             int pin = echo_rep(connfd, 1919810);
-            if(pin < 0) {
+            if (pin >= 0) {
+                printf("sbsbzx");
+            }
+            else {
                 myprintf(fp_res, "[srv](%d) child exits, client PIN returned by echo_rqt() error!\n", getpid());
                 exit(-1);
             }
