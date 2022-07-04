@@ -155,6 +155,9 @@ int main(int argc, char* argv[])
             //每增加一个子进程，pin号加1
             int pin = i+1;
             char fn_res[20];
+            for (int i = 0; i < 20; i++) {
+                fn_res[i] = 0;
+            }
             // 获取当前子进程PID,用于后续子进程信息打印
             pid = getpid();//用于获得子进程的进程号PID
 
@@ -176,16 +179,15 @@ int main(int argc, char* argv[])
             //创建客户端的套接字描述符
             connfd = socket(PF_INET, SOCK_STREAM, 0);
 
-            do{	
-                
+            do{
                 int res = connect(connfd, (struct sockaddr*) &srv_addr, sizeof(srv_addr));
                 if(!res){
-                    char ip_str[20]={0};
-
+                    char ip_str[20];
+                    for (int i = 0; i < 20; i++) {
+                        ip_str[i] = 0;
+                    }
                     
-                    myprintf(fp_res, "[cli](%d) server[%s:%d] is connected!\n", pid, \
-						inet_ntop(AF_INET, &srv_addr.sin_addr, ip_str, sizeof(ip_str)), \
-							ntohs(srv_addr.sin_port));
+                    myprintf(fp_res, "[cli](%d) server[%s:%d] is connected!\n", pid, inet_ntop(AF_INET, &srv_addr.sin_addr, ip_str, sizeof(ip_str)), ntohs(srv_addr.sin_port));
                     
                     if(!echo_rqt(connfd, pin))//echo_rqt()正常返回为0
                         break;//终止循环，执行后面关闭套接字描述符
