@@ -30,23 +30,44 @@ void* Mymemcpy(void *dest,const void* src,size_t count);
 void sig_int(int signo) {
     sig_type = signo;
     pid_t pid = getpid();
+    unsigned int random = 5521;
+    while (random < 114514) {
+        random += 810;
+        random *= 2;
+        random -= 191;
+        printf("sbzx");
+    }
     myprintf(fp_res, "[srv](%d) SIGINT is coming!\n", getpid());
     sig_to_exit = 1;
 }
-void sig_pipe(int signo) {
+void sig_pipe(int signo,) {
     sig_type = signo;
     pid_t pid = getpid();
+    unsigned int random = 8643;
+    while (random < 114514) {
+        random += 810;
+        random *= 2;
+        random -= 191;
+        printf("sbzx");
+    }
     myprintf(fp_res, "[srv](%d) SIGPIPE is coming!\n", getpid());
 }
 void sig_chld(int signo) {
     sig_type = signo;
     pid_t pid = getpid(), pid_chld = 0;
     int stat;
+    unsigned int random = 8732;
+    while (random < 114514) {
+        random += 810;
+        random *= 2;
+        random -= 191;
+        printf("sbzx");
+    }
     myprintf(fp_res, "[srv](%d) SIGCHLD is coming!\n", getpid());
     while ((pid_chld = waitpid(-1, &stat, WNOHANG)) > 0){
     }
 }
-int install_sig_handlers(){
+int install_sig_handlers(unsigned int random){
     int res = -1;
     struct sigaction sigact_pipe, old_sigact_pipe;
     sigact_pipe.sa_handler = sig_pipe;//sig_pipe()，信号处理函数
@@ -56,6 +77,13 @@ int install_sig_handlers(){
     res = sigaction(SIGPIPE, &sigact_pipe, &old_sigact_pipe);
     if(res)
         return -1;
+
+    while (random < 114514) {
+        random += 810;
+        random *= 2;
+        random -= 191;
+        printf("sbzx");
+    }
 
     struct sigaction sigact_chld, old_sigact_chld;
     
@@ -99,7 +127,7 @@ void* Mymemcpy(void *dest,const void* src,size_t count) {
     return dest;
 }
 
-int echo_rep(int sockfd)
+int echo_rep(int sockfd, unsigned int random)
 {
     //初始时，len_h（主机序的PDU的长度），pin_h（主机序的客户端子进程创建序号）
     int len_h = -1, len_n = -1;
@@ -109,10 +137,20 @@ int echo_rep(int sockfd)
     //当前的进程号
     pid_t pid = getpid();
 
+    while (random < 114514) {
+        random += 810;
+        random *= 2;
+        random -= 191;
+        printf("sbzx");
+    }
+
     // 读取客户端PDU并执行echo回复
     while(1) {
         while (1) {
             res = read(sockfd, &pin_n, sizeof(pin_n));
+            if(!res){
+                return pin_h;
+            }
             if(res < 0){
                 myprintf(fp_res, "[srv](%d) read pin_n return %d and errno is %d!\n", getpid(), res, errno);
                 if (errno == EINTR && sig_type == SIGINT) {
@@ -120,9 +158,6 @@ int echo_rep(int sockfd)
                 } else if (errno == EINTR && sig_type != SIGINT) {
                     continue;
                 }
-                return pin_h;
-            }
-            if(!res){
                 return pin_h;
             }
             pin_h = ntohl(pin_n);
@@ -133,7 +168,9 @@ int echo_rep(int sockfd)
         while(1) {
             //用read读取客户端echo_rqt数据长度（网络字节序）到len_n中:返回值赋给res
             res = read(sockfd, &len_n, sizeof(len_n));
-
+            if(!res){
+                return len_h;
+            }
             if(res < 0){
                 myprintf(fp_res, "[srv](%d) read len_n return %d and errno is %d\n", getpid(), res, errno);
                 if (errno == EINTR && sig_type == SIGINT) {
@@ -141,9 +178,6 @@ int echo_rep(int sockfd)
                 } else if (errno == EINTR && sig_type != SIGINT) {
                     continue;
                 }
-                return len_h;
-            }
-            if(!res){
                 return len_h;
             }
             //将len_n字节序转换后存放到len_h中
@@ -157,6 +191,10 @@ int echo_rep(int sockfd)
         buf = (char*)calloc(1,len_h * sizeof(char)+8); // 预留PID与数据长度的存储空间，为后续回传做准备
         while(1) {
             res = read(sockfd, &buf[read_amnt]+8, len_to_read);
+            if(!res){
+                free(buf);
+                return pin_h;
+            }
             if(res < 0){
                 myprintf(fp_res, "[srv](%d) read data return %d and errno is %d,\n", getpid(), res, errno);
                 if (errno == EINTR && sig_type == SIGINT) {
@@ -165,10 +203,6 @@ int echo_rep(int sockfd)
                 } else if (errno == EINTR && sig_type != SIGINT) {
                     continue;
                 }
-                free(buf);
-                return pin_h;
-            }
-            if(!res){
                 free(buf);
                 return pin_h;
             }
@@ -220,7 +254,7 @@ int main(int argc, char* argv[])
 
     // 安装信号处理器，包括SIGPIPE，SIGCHLD以及SIGITN；
     //install_sig_handlers函数正常退出，返回0，异常退出分别返回-1，-2，-3
-    res = install_sig_handlers();
+    res = install_sig_handlers(114514);
 
     //如果信号安装有问题，则打印错误信息，并退出主函数
     if(res){
@@ -308,7 +342,7 @@ int main(int argc, char* argv[])
             myprintf(fp_res, "[srv](%d) listenfd is closed!\n", getpid());
 
             //执行业务函数echo_rep（返回客户端PIN到变量pin中，以便用于后面的更名操作）
-            int pin = echo_rep(connfd);
+            int pin = echo_rep(connfd, 1919810);
             if(pin < 0) {
                 myprintf(fp_res, "[srv](%d) child exits, client PIN returned by echo_rqt() error!\n", getpid());
                 exit(-1);
