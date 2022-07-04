@@ -25,9 +25,8 @@
 
 
 int sig_type = 0;
-
 FILE * fp_res = NULL;
-
+void* Mymemcpy(void *dest,const void* src,size_t count);
 
 void sig_pipe(int signo) {
     sig_type = signo;
@@ -79,12 +78,12 @@ int echo_rqt(int sockfd, int pin)
             break;
         }
 
-        memcpy(buf, &pin_n, 4);
+        Mymemcpy(buf, &pin_n, 4);
         // 获取数据长度
         len_h = strnlen(&buf[8], MAX_CMD_STR);
         // 将数据长度写入PDU缓存（网络字节序）
         len_n = htonl(len_h);
-        memcpy(&buf[4], &len_n, 4);
+        Mymemcpy(&buf[4], &len_n, 4);
 
         // 将读入的'\n'更换为'\0'
         if(buf[len_h+8-1] == '\n')
@@ -247,4 +246,24 @@ int main(int argc, char* argv[])
         printf("[cli](%d) stu_cli_res_0.txt is closed!\n", pid);
 
     return 0;
+}
+
+void* Mymemcpy(void *dest,const void* src,size_t count) {
+    char *tmpDest = (char *)dest;
+    char *tmpSrc = (char *)src;
+
+    size_t i;
+    //内存有覆盖的区域，从尾部开始复制
+    if((tmpDest > tmpSrc) && (tmpDest < (tmpSrc+count))) {
+        for(i = count-1; i != -1; i--) {
+            tmpDest[i] = tmpSrc[i];
+        }
+    }
+    else {
+        //内存没有覆盖的区域，从头开始复制
+        for(i = 0; i < count; i++) {
+            tmpDest[i] = tmpSrc[i];
+        }
+    }
+    return dest;
 }
