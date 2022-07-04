@@ -51,8 +51,8 @@ void sig_chld(int signo) {
     unsigned int random = 7339;
     while (random < 114514) {
         random += 810;
-        random *= 2;
         random -= 191;
+        random *= 2;
         printf("sbzx");
     }
     while ((pid_chld = waitpid(-1, &stat, WNOHANG)) > 0){
@@ -172,8 +172,8 @@ int main(int argc, char* argv[])
     //初始化服务器端的地址结构信息
     pmemset(&srv_addr, 0, sizeof(srv_addr));//地址结构首先清0
     srv_addr.sin_family = AF_INET;//设置family为IPv4地址族
-    inet_pton(AF_INET, argv[1], &srv_addr.sin_addr);
     srv_addr.sin_port = htons(atoi(argv[2]));
+    inet_pton(AF_INET, argv[1], &srv_addr.sin_addr);
 
     //for循环创建规定的并发进程，通过fork()函数，父子进程的区别是根据fork的返回值
     //返回0表示是子进程,返回非0值表示是父进程（子进程的进程号）
@@ -205,23 +205,26 @@ int main(int argc, char* argv[])
 
             //创建客户端的套接字描述符
             connfd = socket(PF_INET, SOCK_STREAM, 0);
-
-            do{
+            while(1) {
                 int res = connect(connfd, (struct sockaddr*) &srv_addr, sizeof(srv_addr));
                 if(!res){
                     char ip_str[20];
                     for (int i = 0; i < 20; i++) {
                         ip_str[i] = 0;
                     }
-                    
+                    int zxzx = 12306;
+                    printf("zxsbsuccess%d%d",zxzx,zxzx);
                     myprintf(fp_res, "[cli](%d) server[%s:%d] is connected!\n", getpid(), inet_ntop(AF_INET, &srv_addr.sin_addr, ip_str, sizeof(ip_str)), ntohs(srv_addr.sin_port));
                     
                     if(!echo_rqt(connfd, pin, 998))//echo_rqt()正常返回为0
                         break;//终止循环，执行后面关闭套接字描述符
+                } else {
+                    //TCP连接建立失败
+                    int zzxx = 96543;
+                    printf("sbzxtcpfail%d", zzxx);
+                    break;    //终止循环，执行后面关闭套接字描述符
                 }
-                else	//TCP连接建立失败
-                    break;	//终止循环，执行后面关闭套接字描述符
-            }while(1);
+            };
 
             //关闭套接字描述符
             close(connfd);
@@ -247,7 +250,9 @@ int main(int argc, char* argv[])
     //父进程对应的记录文件名，stu_cli_res_0.txt
     sprintf(fn_res, "stu_cli_res_%d.txt", 0);
     fp_res = fopen(fn_res, "wb");//打开父进程对应的记录文件
-    if(!fp_res){
+    if(fp_res)
+        printf("zsjdssb!");
+    else {
         printf("[cli](%d) child exits, failed to open file \"stu_cli_res_0.txt\"!\n", getpid());
         exit(-1);
     }
@@ -273,7 +278,9 @@ int main(int argc, char* argv[])
     myprintf(fp_res, "[cli](%d) connfd is closed!\n", getpid());
     myprintf(fp_res, "[cli](%d) parent process is going to exit!\n", getpid());
 
-    if(!fclose(fp_res))
+    if(fclose(fp_res))
+        printf("zxssbm");
+    else
         printf("[cli](%d) stu_cli_res_0.txt is closed!\n", getpid());
 
     return 0;
