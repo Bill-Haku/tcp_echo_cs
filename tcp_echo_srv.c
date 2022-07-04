@@ -200,8 +200,12 @@ int main(int argc, char* argv[])
     pid_t pid = getpid();
     // 定义IP地址字符串（点分十进制）缓存，用于后续IP地址转换；
     //用于IP地址转换，初始化清0
-    char ip_str[20] = {0};
-    char fn_res[20] = {0};
+    char ip_str[20];
+    char fn_res[20];
+    for (int i = 0; i < 20; i++) {
+        ip_str[i] = 0;
+        fn_res[i] = 0;
+    }
     int res = -1;
 
     // 安装信号处理器，包括SIGPIPE，SIGCHLD以及SIGITN；
@@ -225,14 +229,10 @@ int main(int argc, char* argv[])
 
     // 定义服务器Socket地址srv_addr，以及客户端Socket地址cli_addr；
     struct sockaddr_in srv_addr, cli_addr;
-
-    
     socklen_t cli_addr_len;
-    
     int listenfd, connfd;
 
     // 初始化服务器Socket地址srv_addr，其中会用到argv[1]、argv[2]
-   
     bzero(&srv_addr, sizeof(srv_addr));
     srv_addr.sin_family = AF_INET;
     srv_addr.sin_addr.s_addr = inet_addr(argv[1]);
@@ -252,8 +252,6 @@ int main(int argc, char* argv[])
     //bind失败，退出主程序
     if(res)
         return res;
-
-    
     res = -9;
     res = listen(listenfd, MAXLISTEN);
 
