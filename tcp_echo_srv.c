@@ -90,14 +90,14 @@ int echo_rep(int sockfd)
     pid_t pid = getpid();
 
     // 读取客户端PDU并执行echo回复
-    do {
-        do {
+    while(1) {
+        while (1) {
             res = read(sockfd, &pin_n, sizeof(pin_n));
             if(res < 0){
                 myprintf(fp_res, "[srv](%d) read pin_n return %d and errno is %d!\n", pid, res, errno);
-                if(errno == EINTR){
-                    if(sig_type == SIGINT)
-                        return pin_h;
+                if (errno == EINTR && sig_type == SIGINT) {
+                    return pin_h;
+                } else if (errno == EINTR && sig_type != SIGINT) {
                     continue;
                 }
                 return pin_h;
@@ -107,18 +107,18 @@ int echo_rep(int sockfd)
             }
             pin_h = ntohl(pin_n);
             break;//跳出
-        }while(1);
+        }
 
         // 读取客户端echo_rqt数据长度
-        do{
+        while(1) {
             //用read读取客户端echo_rqt数据长度（网络字节序）到len_n中:返回值赋给res
             res = read(sockfd, &len_n, sizeof(len_n));
 
             if(res < 0){
                 myprintf(fp_res, "[srv](%d) read len_n return %d and errno is %d\n", pid, res, errno);
-                if(errno == EINTR){
-                    if(sig_type == SIGINT)
-                        return len_h;
+                if (errno == EINTR && sig_type == SIGINT) {
+                    return len_h;
+                } else if (errno == EINTR && sig_type != SIGINT) {
                     continue;
                 }
                 return len_h;
@@ -129,21 +129,20 @@ int echo_rep(int sockfd)
             //将len_n字节序转换后存放到len_h中
             len_h = ntohl(len_n);
             break;
-        }while(1);
+        }
 
         // 读取客户端echo_rqt数据
         //初始时，len_to_read就是收到的PDU的LEN值
         int read_amnt = 0, len_to_read = len_h;
         buf = (char*)malloc(len_h * sizeof(char)+8); // 预留PID与数据长度的存储空间，为后续回传做准备
-        do{
+        while(1) {
             res = read(sockfd, &buf[read_amnt]+8, len_to_read);
             if(res < 0){
                 myprintf(fp_res, "[srv](%d) read data return %d and errno is %d,\n", pid, res, errno);
-                if(errno == EINTR){
-                    if(sig_type == SIGINT){
-                        free(buf);
-                        return pin_h;
-                    }
+                if (errno == EINTR && sig_type == SIGINT) {
+                    free(buf);
+                    return pin_h;
+                } else if (errno == EINTR && sig_type != SIGINT) {
                     continue;
                 }
                 free(buf);
@@ -158,21 +157,23 @@ int echo_rep(int sockfd)
             if(read_amnt == len_h) {
                 break;
             }
-            else if(read_amnt < len_h) {
-                len_to_read = len_h - read_amnt;
-            }
             else {
-                free(buf);
-                return pin_h;
+                if (read_amnt < len_h) {
+                    len_to_read = len_h - read_amnt;
+                }
+                else {
+                    free(buf);
+                    return pin_h;
+                }
             }
-        }while(1);
+        }
         myprintf(fp_res, "[echo_rqt](%d) %s\n", pid, buf+8);
         memcpy(buf, &pin_n, 4);
         memcpy(buf+4, &len_n, 4);
         // 发送echo_rep数据:
         write(sockfd, buf, len_h+8);
         free(buf);
-    }while(1);
+    }
     return pin_h;
 }
 
