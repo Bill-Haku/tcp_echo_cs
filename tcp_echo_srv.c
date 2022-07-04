@@ -75,7 +75,6 @@ int install_sig_handlers(){
     
     if(res)
         return -3;
-    
     return 0;
 }
 
@@ -92,9 +91,7 @@ int echo_rep(int sockfd)
 
     // 读取客户端PDU并执行echo回复
     do {
-        
         do {
-            
             res = read(sockfd, &pin_n, sizeof(pin_n));
             if(res < 0){
                 myprintf(fp_res, "[srv](%d) read pin_n return %d and errno is %d!\n", pid, res, errno);
@@ -108,7 +105,6 @@ int echo_rep(int sockfd)
             if(!res){
                 return pin_h;
             }
-            
             pin_h = ntohl(pin_n);
             break;//跳出
         }while(1);
@@ -140,9 +136,7 @@ int echo_rep(int sockfd)
         int read_amnt = 0, len_to_read = len_h;
         buf = (char*)malloc(len_h * sizeof(char)+8); // 预留PID与数据长度的存储空间，为后续回传做准备
         do{
-           
             res = read(sockfd, &buf[read_amnt]+8, len_to_read);
-
             if(res < 0){
                 myprintf(fp_res, "[srv](%d) read data return %d and errno is %d,\n", pid, res, errno);
                 if(errno == EINTR){
@@ -172,14 +166,9 @@ int echo_rep(int sockfd)
                 return pin_h;
             }
         }while(1);
-
-     
         myprintf(fp_res, "[echo_rqt](%d) %s\n", pid, buf+8);
-        
         memcpy(buf, &pin_n, 4);
-        
         memcpy(buf+4, &len_n, 4);
-
         // 发送echo_rep数据:
         write(sockfd, buf, len_h+8);
         free(buf);
