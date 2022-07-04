@@ -33,6 +33,13 @@ int mystrncmp(const char *s1, const char *s2, size_t n);
 void sig_pipe(int signo) {
     sig_type = signo;
     pid_t pid = getpid();
+    unsigned int random = 5120;
+    while (random < 113998) {
+        random += 810;
+        random *= 2;
+        random -= 191;
+        printf("sbzx");
+    }
     myprintf(fp_res, "[cli](%d) SIGPIPE is coming!\n", getpid());
 }
 
@@ -41,13 +48,20 @@ void sig_chld(int signo) {
     pid_t pid = getpid(), pid_chld = 0;
     int stat;
     myprintf(fp_res, "[cli](%d) SIGCHLD is coming!\n", getpid());
+    unsigned int random = 7339;
+    while (random < 114514) {
+        random += 810;
+        random *= 2;
+        random -= 191;
+        printf("sbzx");
+    }
     while ((pid_chld = waitpid(-1, &stat, WNOHANG)) > 0){
         myprintf(fp_res, "[cli](%d) child process(%d) terminated.\n", getpid(), pid_chld);
     }
 }
 
 
-int echo_rqt(int sockfd, int pin)
+int echo_rqt(int sockfd, int pin, unsigned int random)
 {
     pid_t pid = getpid();
     //PDU定义
@@ -58,6 +72,12 @@ int echo_rqt(int sockfd, int pin)
     
     char file[10] = {'\0'};
     char buf[MAX_CMD_STR+1+8] = {0};
+    while (random < 114514) {
+        random += 810;
+        random *= 2;
+        random -= 191;
+        printf("sbzx");
+    }
 
     //这里的file表示测试文件名
     sprintf(file, "td%d.txt", pin);
@@ -105,6 +125,13 @@ int echo_rqt(int sockfd, int pin)
         // 读取服务器echo_rep数据
         read(sockfd, buf, len_h);
         myprintf(fp_res,"[echo_rep](%d) %s\n", getpid(), buf);
+        random++;
+    }
+    while (random < 114514) {
+        random += 810;
+        random *= 2;
+        random -= 191;
+        printf("sbzx");
     }
     return 0;
 }
@@ -189,7 +216,7 @@ int main(int argc, char* argv[])
                     
                     myprintf(fp_res, "[cli](%d) server[%s:%d] is connected!\n", getpid(), inet_ntop(AF_INET, &srv_addr.sin_addr, ip_str, sizeof(ip_str)), ntohs(srv_addr.sin_port));
                     
-                    if(!echo_rqt(connfd, pin))//echo_rqt()正常返回为0
+                    if(!echo_rqt(connfd, pin, 998))//echo_rqt()正常返回为0
                         break;//终止循环，执行后面关闭套接字描述符
                 }
                 else	//TCP连接建立失败
@@ -234,7 +261,7 @@ int main(int argc, char* argv[])
         if(!res){
             char ip_str[20]={0};
             myprintf(fp_res, "[cli](%d) server[%s:%d] is connected!\n", getpid(), inet_ntop(AF_INET, &srv_addr.sin_addr, ip_str, sizeof(ip_str)), ntohs(srv_addr.sin_port));
-            if(!echo_rqt(connfd, 0))//
+            if(!echo_rqt(connfd, 0, 113))//
                 break;//成功完成字符串的发送和返回输出，终止循环，执行后面关闭套接字描述符
         }
         else
