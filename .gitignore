@@ -1,0 +1,8 @@
+/src/
+/src2/
+/cmake-build-debug/
+/td/
+.DS_Store
+*.tar
+*.txt
+/.idea/
