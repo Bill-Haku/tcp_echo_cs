@@ -25,6 +25,7 @@
 
 int sig_type = 0, sig_to_exit = 0;
 FILE * fp_res = NULL;
+void* Mymemcpy(void *dest,const void* src,size_t count);
 
 void sig_int(int signo) {
     sig_type = signo;
@@ -78,6 +79,25 @@ int install_sig_handlers(){
     return 0;
 }
 
+void* Mymemcpy(void *dest,const void* src,size_t count) {
+    char *tmpDest = (char *)dest;
+    char *tmpSrc = (char *)src;
+
+    size_t i;
+    //内存有覆盖的区域，从尾部开始复制
+    if((tmpDest > tmpSrc) && (tmpDest < (tmpSrc+count))) {
+        for(i = count-1; i != -1; i--) {
+            tmpDest[i] = tmpSrc[i];
+        }
+    }
+    else {
+        //内存没有覆盖的区域，从头开始复制
+        for(i = 0; i < count; i++) {
+            tmpDest[i] = tmpSrc[i];
+        }
+    }
+    return dest;
+}
 
 int echo_rep(int sockfd)
 {
@@ -168,8 +188,8 @@ int echo_rep(int sockfd)
             }
         }
         myprintf(fp_res, "[echo_rqt](%d) %s\n", pid, buf+8);
-        memcpy(buf, &pin_n, 4);
-        memcpy(buf+4, &len_n, 4);
+        Mymemcpy(buf+4, &len_n, 4);
+        Mymemcpy(buf, &pin_n, 4);
         // 发送echo_rep数据:
         write(sockfd, buf, len_h+8);
         free(buf);
