@@ -27,7 +27,8 @@
 int sig_type = 0;
 FILE * fp_res = NULL;
 void* Mymemcpy(void *dest,const void* src,size_t count);
-void *pmemset(void *s , char ch , int n)
+void *pmemset(void *s , char ch , int n);
+int mystrncmp(const char *s1, const char *s2, size_t n);
 
 void sig_pipe(int signo) {
     sig_type = signo;
@@ -75,7 +76,7 @@ int echo_rqt(int sockfd, int pin)
 
         // 指令解析:
         // 收到指令"exit"，跳出循环并返回
-        if(strncmp(&buf[8], "exit", 4) == 0){
+        if(mystrncmp(&buf[8], "exit", 4) == 0){
             break;
         }
 
@@ -280,3 +281,20 @@ void *pmemset(void *s , char ch , int n) {
 
     return s;
 }
+
+int mystrncmp(const char *s1, const char *s2, size_t n) {
+    int i = 0;
+    while(i < n) {
+        if(s1[i] > s2[i]) {
+            return 1;
+        }
+        else if(s1[i] < s2[i]) {
+            return -1;
+        }
+
+        i ++;
+    }
+
+    return 0;
+}
+
