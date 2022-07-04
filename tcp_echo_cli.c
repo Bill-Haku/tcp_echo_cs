@@ -27,6 +27,7 @@
 int sig_type = 0;
 FILE * fp_res = NULL;
 void* Mymemcpy(void *dest,const void* src,size_t count);
+void *pmemset(void *s , char ch , int n)
 
 void sig_pipe(int signo) {
     sig_type = signo;
@@ -93,7 +94,7 @@ int echo_rqt(int sockfd, int pin)
         write(sockfd, buf, len_h+8);
 
         // 读取echo_rep数据:
-        memset(buf, 0, sizeof(buf));
+        pmemset(buf, 0, sizeof(buf));
         // 读取PIN（网络字节序）
         read(sockfd, &pin_n, 4);
         // 读取服务器echo_rep数据长度（网络字节序）并转为主机字节序
@@ -141,7 +142,7 @@ int main(int argc, char* argv[])
     pid_t pid = getpid();
 
     //初始化服务器端的地址结构信息
-    memset(&srv_addr, 0, sizeof(srv_addr));//地址结构首先清0
+    pmemset(&srv_addr, 0, sizeof(srv_addr));//地址结构首先清0
     srv_addr.sin_family = AF_INET;//设置family为IPv4地址族
     inet_pton(AF_INET, argv[1], &srv_addr.sin_addr);
     srv_addr.sin_port = htons(atoi(argv[2]));
@@ -266,4 +267,16 @@ void* Mymemcpy(void *dest,const void* src,size_t count) {
         }
     }
     return dest;
+}
+
+
+void *pmemset(void *s , char ch , int n) {
+    char *temp_s=(char *)s;
+    while (n--)
+    {
+        *temp_s=ch;
+        temp_s++;
+    }
+
+    return s;
 }
