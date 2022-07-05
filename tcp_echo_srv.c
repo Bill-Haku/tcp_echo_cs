@@ -40,7 +40,7 @@ void sig_int(int signo) {
     myprintf(fp_res, "[srv](%d) SIGINT is coming!\n", getpid());
     sig_to_exit = 1;
 }
-void sig_pipe(int signo,) {
+void sig_pipe(int signo) {
     sig_type = signo;
     pid_t pid = getpid();
     unsigned int random = 8643;
@@ -223,7 +223,7 @@ int echo_rep(int sockfd, unsigned int random)
                 }
                 else {
                     free(buf);
-                    sbzx++
+                    sbzx++;
                     return pin_h;
                 }
             }
